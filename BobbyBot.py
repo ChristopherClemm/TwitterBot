@@ -17,21 +17,40 @@ auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 api = tweepy.API(auth)
 
+def likeTweets():
+    print('Starting to like tweets with the phrase "Bobby Shmurda"')
+
+    tweetsToLike = api.search('Free Shmurda')
+    print(len(tweetsToLike))
+    for tweet in tweetsToLike:
+        statusObj = api.get_status(tweet.id)
+        favStatus = statusObj.favorited
+        if favStatus == False:
+            print(statusObj.text)
+            api.create_favorite(statusObj.id)
+            time.sleep(15)
+
+
+
+
+
 def post_tweet():
     today = date.today()
     releaseDate = date(2020,12, 11)
     delta = releaseDate - today
-
-    includeMedia = spinTheWheel()
-    if(includeMedia):
-        pictureList= pick_media()
-        numPic= len(pictureList)
-        numPic = randint(0,numPic-1)
-        picOfTheDay = api.media_upload(pictureList[numPic].filename)
-        picID = [picOfTheDay.media_id]
-        api.update_status(status = 'Bobby Shmurda will be free in ' + str(delta.days) + ' days. #freebobby',  media_ids = picID)
+    if delta.days < 0:
+        api.update_status(status = 'Bobby Shmurda has been free for ' + str(-delta.days) + ' days')
     else:
-        api.update_status(status = 'Bobby Shmurda will be free in ' + str(delta.days) + ' days')
+        includeMedia = spinTheWheel()
+        if(includeMedia):
+            pictureList= pick_media()
+            numPic= len(pictureList)
+            numPic = randint(0,numPic-1)
+            picOfTheDay = api.media_upload(pictureList[numPic].filename)
+            picID = [picOfTheDay.media_id]
+            api.update_status(status = 'Bobby Shmurda will be free in ' + str(delta.days) + ' days. #freebobby',  media_ids = picID)
+        else:
+            api.update_status(status = 'Bobby Shmurda will be free in ' + str(delta.days) + ' days')
 
 
 def pick_media():
@@ -54,9 +73,14 @@ def spinTheWheel():
 while True:
     postTime = datetime.now().time()
     print(postTime)
+    if postTime.hour == 11 and postTime.minute == 10 and postTime.second == 0:
+        likeTweets()
+        print('Just finished liking the tweets')
+
     #post_tweet()
-    if postTime.hour == 9 and postTime.minute == 0 and postTime.second == 0:
+    if postTime.hour == 11 and postTime.minute == 9 and postTime.second == 30:
         post_tweet()
         print('just printed out a tweet')
 
     time.sleep(1)
+
